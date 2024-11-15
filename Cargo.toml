@@ -1,0 +1,9 @@
+[package]
+name = "pirateline"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4"
+byteorder = "1.4"
+num_enum = "0.5"
