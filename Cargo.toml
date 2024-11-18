@@ -7,3 +7,6 @@ edition = "2021"
 chrono = "0.4"
 byteorder = "1.4"
 num_enum = "0.5"
+diesel = { version = "2.2.0", features = ["sqlite", "chrono"] }
+dotenvy = "0.15"
+my_proc_macro = { path = "my_proc_macro" }
