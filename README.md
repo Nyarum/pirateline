@@ -1,20 +1,101 @@
-# Pirate King Online Server Emulator
 
-This project is an **emulation** of the server-side logic for the MMO game **Pirate King Online**. It is implemented in Rust and provides foundational functionality for handling client-server communication, packet processing, and opcode management.
+# PKO (blazing fast, security, reworked)
 
-## Features
+A Rust-based server-side project for emulation MMO Pirate King Online
 
-- **TCP Server**: Listens for incoming client connections and processes requests in separate threads.
-- **Packet Handling**: Supports structured packing and unpacking of packets.
-- **Opcode-Based Logic**: Implements various opcodes such as `Auth`, `Exit`, `CreateCharacter`, and more.
-- **Extensibility**: Designed to be easily extended with new opcodes and packet types.
-- **MMO-Specific Logic**: Built specifically to emulate the server-side mechanics of Pirate King Online.
+---
 
-## Project Structure
+## Getting Started
 
-```plaintext
-src/
-├── main.rs                   // Entry point and server logic
-├── server/
-│   ├── income_packet.rs      // Incoming packet handling
-│   ├── outcome_packet.rs     // Outgoing packet handling
+Follow the steps below to set up and run the project:
+
+### Prerequisites
+
+Ensure you have [Rust](https://www.rust-lang.org/tools/install) installed on your system.
+
+- 1.82+
+
+---
+
+### Installation
+
+Before running the project, install the required dependencies:
+
+1. Clone the repository:
+   ```bash
+   git clone git@github.com:Nyarum/pirateline.git
+   ```
+
+2. Navigate to the project directory:
+   ```bash
+   cd pirateline
+   ```
+
+3. Install Rust dependencies using Cargo:
+   ```bash
+   cargo build
+   ```
+
+---
+
+### Running the Project
+
+To run the project, execute the following command from the project directory:
+
+```bash
+cargo run
+```
+
+---
+
+### Testing
+
+Run tests to ensure everything is working correctly:
+
+```bash
+cargo test
+```
+
+---
+
+### Development Mode
+
+If you're actively developing the project, you can use tools like [rust-analyzer](https://rust-analyzer.github.io/) in your IDE for improved productivity.
+
+#### Example: Visual Studio Code
+
+1. Install the [Rust extension pack](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust) in VS Code.
+
+2. Use the built-in terminal or the task runner to build and run the project:
+   - Open the Command Palette:
+     ```
+     CTRL + SHIFT + P
+     ```
+     Then select **Tasks: Run Build Task**.
+
+   - Alternatively, use the shortcut:
+     ```
+     CTRL + SHIFT + B
+     ```
+
+---
+
+## Contributing
+
+We welcome contributions! Feel free to:
+- Report bugs.
+- Suggest features.
+- Submit pull requests.
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+### Acknowledgments
+
+Special thanks to:
+- pkodev.net
