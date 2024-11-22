@@ -62,6 +62,14 @@ impl Server {
             return;
         });
 
+        let mut db = match self.db.lock() {
+            Ok(db) => db,
+            Err(e) => {
+                println!("Failed to get database connection: {}", e);
+                return;
+            }
+        };
+
         loop {
             // Read data from the client
             let bytes_read = match stream.read(&mut buffer) {
@@ -97,36 +105,13 @@ impl Server {
             };
 
             // Handle the header
-            let packet = match header.handle(&buffer[8..bytes_read]) {
+            match header.handle(&mut stream, &mut db, &buffer[8..bytes_read]) {
                 Ok(packet) => packet,
                 Err(e) => {
                     println!("Failed to handle packet: {}", e);
                     return;
                 }
             };
-
-            // Process the packet
-            match packet {
-                income_packet::Packet::Auth(auth) => {
-                    let mut db = match self.db.lock() {
-                        Ok(db) => db,
-                        Err(e) => {
-                            println!("Failed to get database connection: {}", e);
-                            return;
-                        }
-                    };
-
-                    auth.handle(&mut *db);
-                }
-                income_packet::Packet::Exit => {
-                    if let Err(e) = stream.shutdown(std::net::Shutdown::Both) {
-                        println!("Failed to shut down stream: {}", e);
-                    } else {
-                        println!("Exit");
-                    }
-                    return;
-                }
-            }
 
             let chars_output: [u8; 20] = [
                 0x00, 0x00, 0x7C, 0x35, 0x09, 0x19, 0xB2, 0x50, 0xD3, 0x49, 0x00, 0x01, 0x00, 0x00,

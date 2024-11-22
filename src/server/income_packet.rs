@@ -1,9 +1,13 @@
+use crate::server::handle;
 use byteorder::{BigEndian, LittleEndian, ReadBytesExt};
+use diesel::prelude::*;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use std::convert::TryFrom;
-use std::io::{Cursor, Read};
+use std::io::{self, Cursor, Read};
+use std::net::{TcpListener, TcpStream};
 
 use my_proc_macro::Unpack;
+use std::io::Error;
 
 /// Reads a `u16` value from the cursor.
 fn read_u16_be(cursor: &mut Cursor<&[u8]>) -> Result<u16, String> {
@@ -47,37 +51,43 @@ pub struct Header {
 
 impl Header {
     // Function to unpack raw bytes into a Header struct
-    pub fn unpack(data: &[u8]) -> Result<Self, String> {
+    pub fn unpack(data: &[u8]) -> Result<Self, Error> {
         if data.len() < 8 {
-            return Err("Not enough bytes to unpack Header".to_string());
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Not enough bytes to unpack Header",
+            ));
         }
 
         let mut cursor = Cursor::new(data);
 
         // Read fields in the correct order and handle errors
-        let length = cursor.read_u16::<BigEndian>().map_err(|e| e.to_string())?;
-        let id = cursor
-            .read_u32::<LittleEndian>()
-            .map_err(|e| e.to_string())?;
-        let opcode = cursor.read_u16::<BigEndian>().map_err(|e| e.to_string())?;
+        let length = cursor.read_u16::<BigEndian>()?;
+        let id = cursor.read_u32::<LittleEndian>()?;
+        let opcode = cursor.read_u16::<BigEndian>()?;
 
         Ok(Header { length, id, opcode })
     }
 
-    pub fn handle(self: Self, data: &[u8]) -> Result<Packet, String> {
-        match Opcode::try_from(self.opcode) {
-            Ok(opcode) => match opcode {
-                Opcode::Auth => match Auth::unpack(data) {
-                    Ok(auth) => Ok(Packet::Auth(auth)),
-                    Err(e) => Err(e),
-                },
-                Opcode::Exit => Ok(Packet::Exit),
-                _ => Err(format!("Unsupported opcode: {:?}", opcode)),
-            },
-            Err(e) => {
-                println!("Failed to unpack header: {}", e);
-                return Err("Failed to unpack header".to_string());
+    pub fn handle(
+        self: Self,
+        stream: &mut TcpStream,
+        db: &mut SqliteConnection,
+        data: &[u8],
+    ) -> Result<i32, String> {
+        let opcode = Opcode::try_from(self.opcode).map_err(|e| e.to_string())?;
+
+        match opcode {
+            Opcode::Auth => {
+                let auth = Auth::unpack(data).map_err(|e| e)?;
+                auth.handle(db);
+                return Ok(0);
             }
+            Opcode::Exit => {
+                let _ = stream.shutdown(std::net::Shutdown::Both);
+                Ok(0)
+            }
+            _ => return Err(format!("Unsupported opcode: {:?}", opcode)),
         }
     }
 }
